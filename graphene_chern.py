@@ -106,9 +106,9 @@ def H_Rashba(k_vec):
     -------
     Hk: 4x4 complex matrix, Hamiltonian
     """
-    m=0.5
-    t2=   m/(3*np.sqrt(3)) - 0.5  
-    tso=-0.1
+    m=2
+    tso= 0.06# m/(3*np.sqrt(3)) - 1
+    tR=0.0000001
     
     kx = k_vec[0]
     ky = k_vec[1]
@@ -126,15 +126,15 @@ def H_Rashba(k_vec):
     Hk = np.zeros((Nd,Nd), dtype=complex)
 
     
-    Hk[0,0] = 0.5* ( m +  t2*Beta(kx,ky) ) # To break TRS
+    Hk[0,0] = 0.5* ( m +  2*tso*Beta(kx,ky) ) # To break TRS
     Hk[0,1] = gamma
-    Hk[0,3] = tso  * (1.j*phi1)
+    Hk[0,3] = tR  * (1.j*phi1)
     
 
     Hk[1,1] = Hk[0,0]
-    Hk[1,2] = tso  * (-1.j*phi2.conj())
+    Hk[1,2] = tR  * (-1.j*phi2.conj())
 
-    Hk[2,2] = -Hk[0,0]
+    Hk[2,2] = - Hk[0,0]
     Hk[2,3] = Hk[0,1]
 
     Hk[3,3] = - Hk[0,0]

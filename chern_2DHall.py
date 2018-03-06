@@ -10,14 +10,22 @@
 import numpy as np
 import numpy.linalg as lg
 
-# Function that calculate Hamiltonian H(k)
+########################################
+###            Functions             ###
+########################################
 def H_k(k_vec, dim=3):
-    """ This function calulate the Hamiltonian of a 
-    2D electron gas in presence of an applied magnetic
-    field. The magnetic field is introduced using 
-    Landau's guage.
-    in: kx, ky, and dim dimension of H
-    out: H_k, k-representation of H 
+    """function to construct the Hamiltonian of a 2DEG in
+    presence of an applied magnetic field. The magnetic
+    field is introduced using Landau's guage.  
+    input:
+    ------
+    k_vec: vec(2), float, (kx, ky)
+    dim: integer, dimension of Hamiltonian, depends on magnetic flux
+
+    return:
+    -------
+    Hk: (2,2) complex, k-representation of H
+
     """
     Hk = np.zeros((dim,dim), dtype=complex)
     t = 1                       # hopping amplitude
@@ -41,13 +49,19 @@ def H_k(k_vec, dim=3):
 ############################################################
 
 def build_U(vec1,vec2):
-    """ This function calculate the iner product of two
-    eigenvectors divided by the norm: 
+    """function to calculate the iner product of two
+    eigenvectors divided by the norm:
     
     U = <psi|psi+mu>/|<psi|psi+mu>|
 
-    in: two vectors vec1, and vec2
-    out: scalar complex number
+    input:
+    ------
+    vec, vec2: vectors complex.
+
+    return:
+    -------
+    U: scalar complex number
+
     """
 
     # U = <psi|psi+mu>/|<psi|psi+mu>|
@@ -59,15 +73,22 @@ def build_U(vec1,vec2):
 ############################################################
 
 def latF(k_vec, Dk, dim):
-    """ Calulating lattice field using the definition:
-    F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
-    so for each k=(kx,ky) point, four U must be calculate.
-    The lattice field has the same dimension of number of
-    energy bands.
+    """calulate lattice field using the definition: F12 = ln[
+    U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ] for each
+    k=(kx,ky) point, four U must be calculated.  The lattice
+    field has the same dimension of the number of energy
+    bands.
     
-    in: k-point k_vec=(kx,ky), Dk=(Dkx,Dky), dim: dim of H(k)
-    out: lattice field corresponding to each band as a n 
-    dimensional vec
+    input:
+    ------
+    k_vec:vec(2), float, (kx,ky).
+    Dk: vec(2), float, (Dkx,Dky),
+    dim:integer,  dim of H(k)
+    
+    return:
+    -------
+    F12:vec(dim), complex, lattice field corresponding to each band.
+    E_sort: vec(dim) float, eigenenergies.
     """
 
     # Here we calculate the band structure and sort
@@ -110,8 +131,10 @@ def latF(k_vec, Dk, dim):
     F12 = np.log( U1x * U2x * 1./U1y * 1./U2y)
 
     return F12, E_sort
-############################################################
-# Main program
+
+##################################################
+###             Main program                   ###
+##################################################
 
 x_res = 50
 y_res = 50
@@ -122,7 +145,7 @@ Dy = (2.*np.pi)/y_res
 Dk = np.array([Dx,Dy], float)
 
 LF = np.zeros((Nd), dtype=complex)
-LF_arr = np.zeros((Nd,x_res, y_res), dtype=float)
+LF_arr = np.zeros((Nd,x_res, y_res), dtype=float) # plotting array
 sumN = np.zeros((Nd), dtype=complex)
 E_k = np.zeros((Nd), dtype=complex)
 chernN = np.zeros((Nd), dtype=complex)
@@ -143,9 +166,11 @@ for ix in range(x_res):
         LF_arr[:,ix,iy] = -LF.imag/(2.*np.pi) 
 
 chernN = sumN.imag/(2.*np.pi)
-print chernN
+print("Chern number associated with each band: ", chernN)
 
-# plot
+##################################################
+###             Main program                   ###
+##################################################
 
 import matplotlib.pyplot as pl
 from mpl_toolkits.mplot3d import Axes3D
@@ -181,6 +206,7 @@ ax.set_ylim(0,2*np.pi)
 
 ax.set_zlabel(r'$i\tilde{F}_{12}$', fontsize=18)
 ax.zaxis._axinfo['label']['space_factor'] = 2.5
+
 # ax.set_zticks([""])
 
 # ax.set_zticklabels([""])
@@ -197,4 +223,4 @@ ax.get_proj = lambda: np.dot(Axes3D.get_proj(ax), np.diag([0.5, 1.5, 1, 1]))
 # fig.colorbar(surf, shrink=1., aspect=5)
 
 pl.show()
-fig.savefig("chr3.pdf", bbox_inches='tight')
+# fig.savefig("chr3.pdf", bbox_inches='tight')
