@@ -76,7 +76,10 @@ def H_eff(k_vec, delta):
 
     return:
     -------
-    exp(iH_eff T): 2x2 matrix of exp of the Floquet Hamiltonian
+    Efl_k: real (2,) ndarray, quasienergies of
+    effective Floquet Hamiltonian
+    Ufl_k: complex (2,2) ndarray, eigenvectors of
+    effective Floquet Hamiltonian
     """
 
     Nd = 2                              # dimension of Hamiltonian
@@ -101,8 +104,13 @@ def H_eff(k_vec, delta):
         #MM = np.dot(U_inv,np.dot(H_M, U))
         MM = np.dot(U,M1)
         M_eff = np.dot(M_eff,MM)
+    # end of loop
+    E, aux = lg.eig( M_eff )
+    idx = (np.log(E).imag).argsort()
+    Efl_k = np.log(E).imag[idx]
+    Ufl_k = aux[:,idx]
 
-    return M_eff
+    return Efl_k, Ufl_k
 ############################################################
 
 def build_U(vec1,vec2):
@@ -148,34 +156,19 @@ def latF(k_vec, Dk, delta, dim=2):
     E: Quasienergies
     """
 
-    # Here we calculate the band structure and sort
-    # them from low to high eigenenergies
-
     k = k_vec
-    H_k = H_eff(k, delta)
-    E, aux = lg.eig( H_k )
-    idx = (np.log(E).imag).argsort()
-    E_sort = np.log(E).imag[idx]
-    # E_sort = np.log(E).imag
-    psi = aux[:,idx]
+    E_sort, psi = H_eff(k, delta)
     
     k = np.array([k_vec[0]+Dk[0], k_vec[1]], float)
-    H_k = H_eff(k, delta)
-    E, aux = lg.eig( H_k )
-    idx = (np.log(E).imag).argsort()
-    psiDx = aux[:,idx]
+    E, psiDx = H_eff(k, delta)
+    
     
     k = np.array([k_vec[0], k_vec[1]+Dk[1]], float)
-    H_k = H_eff(k, delta)
-    E, aux = lg.eig( H_k )
-    idx = (np.log(E).imag).argsort()
-    psiDy = aux[:,idx]
+    E, psiDy = H_eff(k, delta)
     
     k = np.array([k_vec[0]+Dk[0], k_vec[1]+Dk[1]], float)
-    H_k = H_eff(k, delta)
-    E, aux = lg.eig( H_k )
-    idx = (np.log(E).imag).argsort()
-    psiDxDy = aux[:,idx]
+    E, psiDxDy = H_eff(k, delta)
+    
     
     U1x = np.zeros((dim), dtype=complex)
     U2y = np.zeros((dim), dtype=complex)

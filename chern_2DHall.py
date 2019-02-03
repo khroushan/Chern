@@ -29,7 +29,8 @@ def H_k(k_vec, dim=3):
     """
     Hk = np.zeros((dim,dim), dtype=complex)
     t = 1                       # hopping amplitude
-    phi = 1/3.                  # flux per plaquette
+    q = 3
+    phi = 1./q                  # flux per plaquette
 
     kx = k_vec[0]
     ky = k_vec[1]
@@ -40,7 +41,7 @@ def H_k(k_vec, dim=3):
     # off-diagonal elements
     Hk[0,1] = -t
     Hk[1,2] = -t
-    Hk[0,2] = -t*np.exp(-3.j*kx)
+    Hk[0,2] = -t*np.exp(-q*1.j*kx)
 
     # Make it hermitian
     Hk = Hk + Hk.conj().T
@@ -138,7 +139,8 @@ def latF(k_vec, Dk, dim):
 
 x_res = 50
 y_res = 50
-Nd = 3                          # dimension of the Hamiltonian
+q = 3
+Nd = q                          # dimension of the Hamiltonian
 
 Dx = (2.*np.pi/3.)/x_res
 Dy = (2.*np.pi)/y_res

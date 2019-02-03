@@ -22,12 +22,12 @@ import FL_funcs as FL
 
 # The k-domain is the brillouin zone
 
-x_res = 100                     # kx resolution
+x_res = 30                     # kx resolution
 kx_int = 0                      # initial point
 kx_fin = 4*np.pi/3              # final point
 Dx = (kx_fin - kx_int)/x_res
 
-y_res = 100
+y_res = 30
 ky_int = 0
 ky_fin = 2*np.pi/np.sqrt(3)
 Dy = (ky_fin - ky_int)/y_res
