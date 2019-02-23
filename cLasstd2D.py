@@ -1,3 +1,7 @@
+""" Class of infinite two-dimensional lattices. 
+
+The module contains hexagonal and square lattices. 
+"""
 import numpy as np
 import numpy.linalg as lg
 import FL_funcs as fl
