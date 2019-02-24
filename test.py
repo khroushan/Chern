@@ -13,6 +13,9 @@ kx_int, kx_fin = -np.pi, np.pi
 ky_int, ky_fin = -np.pi, np.pi
 N_res = 100
 
+kx_iBz, kx_fBz = 0, 4*np.pi/3
+ky_iBz, ky_fBz = 0, 2*np.pi/np.sqrt(3)
+
 kx_range = np.array([kx_int,kx_fin])
 ky_range = np.array([ky_int,ky_fin])
 
@@ -27,7 +30,7 @@ E_arr = np.zeros((2,100,100), float)
 E_arr = grlt.band_structure_static(kx_range, ky_range, N_res)
 # dynamic quasienergies
 # E_arr = grlt.band_structure_dynamic(kx_range, ky_range, N_res)
-
+chernN, E_arr2 = grlt.chernNum()
 
 ######################################## 
 ##########       Plot       ############
@@ -43,6 +46,12 @@ ax = fig.add_subplot(1,2,1)
 ext = [kx_int, kx_fin, ky_int, ky_fin] 
 im = ax.imshow(E_arr[1,:,:].T, extent=ext, origin='lower',  cmap=pl.cm.RdBu) 
 cset = ax.contour(E_arr[0,:,:].T, np.arange(-3,0,0.3), origin='lower', 
+                  extent=ext, linewidths=2,cmap=pl.cm.Set2)
+
+ax2 = fig.add_subplot(1,2,2)
+ext = [kx_iBz, kx_fBz, ky_iBz, ky_fBz] 
+im = ax2.imshow(E_arr2[1,:,:].T, extent=ext, origin='lower',  cmap=pl.cm.RdBu) 
+cset = ax2.contour(E_arr2[0,:,:].T, np.arange(-3,0,0.3), origin='lower', 
                   extent=ext, linewidths=2,cmap=pl.cm.Set2)
 
 pl.show()

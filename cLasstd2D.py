@@ -10,7 +10,7 @@ import FL_funcs as fl
 class lattice2D():
     """ class of 2D infinite hexagonal lattice in k-representation.
     """
-    def __init__(self, Nd=2, J_hop=1., delta = 1, it = 0, 
+    def __init__(self, Nd=2, J_hop=1., delta = 1., it = 0, 
                  k_vec = np.zeros((2), float), **kwargs):
         """
         the basic structure of a hexagonal lattice is persumed,
@@ -152,19 +152,122 @@ class lattice2D():
         return E_arr
 
     ####################
-    # chern number calculator
-    """
-    a Hamiltonian in (kx,ky) is given, evaluate the Chern number for each band
-    input:
-    ------
-    kx_Bz: real (2,), kx BZ
-    ky_Bz: real (2,), ky BZ
-    N_res: int, resolution in kx and kx direction
+    def latF(self, k_vec, Dk, delta):
+        """ Calulating lattice field using the definition:
+        F12 = ln[ U1 * U2(k+1) * U1(k_2)^-1 * U2(k)^-1 ]
+        so for each k=(kx,ky) point, four U must be calculate.
+        The lattice field has the same dimension of number of
+        energy bands.
 
-    output:
-    -------
-    Chrn_Num: real (Nd,), the Chern number associated with each band.
-    """
-    #################### 
-    
-        
+        input:
+        ------
+        k_vec=(kx,ky), 
+        Dk=(Dkx,Dky), 
+
+        output:
+        -------
+        F12:lattice field corresponding to each band as a n 
+        dimensional vec
+        E: Quasienergies
+        """
+
+        k = k_vec
+        E_sort, psi = lg.eig( fl.H_k(k, self.it, self.delta) )
+        E_sort = np.sort(E_sort)
+
+        k = np.array([k_vec[0]+Dk[0], k_vec[1]], float)
+        E, psiDx = lg.eig( fl.H_k(k, self.it, self.delta) )
+
+
+        k = np.array([k_vec[0], k_vec[1]+Dk[1]], float)
+        E, psiDy = lg.eig( fl.H_k(k, self.it, self.delta) )
+
+        k = np.array([k_vec[0]+Dk[0], k_vec[1]+Dk[1]], float)
+        E, psiDxDy = lg.eig( fl.H_k(k, self.it, self.delta) )
+
+
+        U1x = np.zeros((self.Nd), dtype=complex)
+        U2y = np.zeros((self.Nd), dtype=complex)
+        U1y = np.zeros((self.Nd), dtype=complex)
+        U2x = np.zeros((self.Nd), dtype=complex)
+
+        for i in range(self.Nd):
+            U1x[i] = fl.build_U(psi[:,i], psiDx[:,i] )
+            U2y[i] = fl.build_U(psi[:,i], psiDy[:,i] )
+            U1y[i] = fl.build_U(psiDy[:,i], psiDxDy[:,i] )
+            U2x[i] = fl.build_U(psiDx[:,i], psiDxDy[:,i] )
+
+        F12 = np.zeros((self.Nd), dtype=complex)
+
+        F12 = np.log( U1x * U2x * 1./U1y * 1./U2y)
+
+        return F12, E_sort
+    ########################################
+
+    def chernNum(self, kx_Bz=np.array([0,4*np.pi/3]), 
+                 ky_Bz=np.array([0,2*np.pi/np.sqrt(3)]), 
+                 N_res=30):
+        """
+        To calculate the Chern number of the Hamiltonian (or the Floquet Hamiltonian)
+        over its Brillouin zone (BZ). 
+        input:
+        ------
+        kx_Bz: real (2,), kx BZ
+        ky_Bz: real (2,), ky BZ
+        N_res: int, resolution in kx and kx direction
+
+        output:
+        -------
+        Chrn_Num: real (Nd,), the Chern number associated with each band.
+        """
+        x_eps = 0.3                     # shift from Dirac point
+        x_res = 20
+        kx_int = 0 + x_eps # -np.pi
+        kx_fin = 4*np.pi/3 + x_eps
+        Dx = (kx_fin - kx_int)/x_res
+
+        y_res = 20
+        ky_int = 0 # -np.pi
+        ky_fin = 2*np.pi/np.sqrt(3)
+        Dy = (ky_fin - ky_int)/y_res
+
+        Nd = self.Nd                          # dimension of the Hamiltonian
+        Dk = np.array([Dx,Dy], float)
+
+        LF = np.zeros((Nd), dtype=complex)
+        LF_arr = np.zeros((Nd,x_res, y_res), dtype=float)
+        E_arr = np.zeros((Nd,x_res, y_res), dtype=float)
+        sumN = np.zeros((Nd), dtype=complex)
+        E_k = np.zeros((Nd), dtype=complex)
+        chernN = np.zeros((Nd), dtype=complex)
+
+        # Loop over kx
+        for ix in range(x_res):
+            kx = kx_int + ix*Dx
+
+            # Loop over ky
+            for iy in range(y_res):
+                ky = ky_int + iy*Dy
+
+                k_vec = np.array([kx,ky], float)
+
+                LF, E_k = self.latF(k_vec, Dk, self.delta)
+
+                sumN += LF
+
+                # # save data for plotting
+                LF_arr[:,ix,iy] = LF.imag
+
+                E_arr[:,ix,iy] = np.sort(E_k.real)
+
+            # End of ky Loop
+        # End of kx Loop
+
+        chernN = sumN.imag/(2*np.pi)
+        print("Chern number bands are (%.3f, %.3f) "  
+              %(chernN[0], chernN[1]))
+        print("Sum of all bands Chern Number is %.2f " %(sum(chernN)))
+        return chernN, E_arr
+        #################### 
+
+
